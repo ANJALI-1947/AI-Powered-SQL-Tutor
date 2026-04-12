@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<title>SQL Tutor AI — Login</title>
+<link rel="stylesheet" th:href="@{/css/login.css}"/>
+</head>
+<body>
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-logo">
+      <span>⚡</span>
+      <span class="logo-text">SQL <strong>Tutor</strong> <span class="ai-badge">AI</span></span>
+    </div>
+    <p class="login-subtitle">Spring Boot · JavaFX · Hibernate · Deep Learning</p>
+
+    <div th:if="${errorMsg}"   class="alert alert-error"   th:text="${errorMsg}"></div>
+    <div th:if="${successMsg}" class="alert alert-success" th:text="${successMsg}"></div>
+
+    <form th:action="@{/login}" method="post">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="e.g. student" required/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Password" required/>
+      </div>
+      <button type="submit" class="btn-login">Sign In →</button>
+    </form>
+
+    <div class="demo-hint">
+      <p>Demo accounts:</p>
+      <div class="demo-users">
+        <span onclick="fill('admin','admin123')">👑 admin / admin123</span>
+        <span onclick="fill('student','student123')">🎓 student / student123</span>
+        <span onclick="fill('guest','guest123')">👤 guest / guest123</span>
+      </div>
+    </div>
+    <div class="ai-note">
+      🤖 Powered by <strong>Mistral-7B</strong> Deep Learning Model
+    </div>
+  </div>
+  <footer class="login-footer">SQL Tutor AI · Spring Boot · JavaFX · Hibernate · Session Management</footer>
+</div>
+<script>
+function fill(u,p){
+  document.querySelector('[name=username]').value=u;
+  document.querySelector('[name=password]').value=p;
+}
+</script>
+</body>
+</html>

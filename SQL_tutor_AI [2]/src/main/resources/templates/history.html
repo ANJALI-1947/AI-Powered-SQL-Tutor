@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<meta charset="UTF-8"/>
+<title>SQL Tutor AI — History</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<link rel="stylesheet" th:href="@{/css/history.css}"/>
+</head>
+<body>
+<header>
+  <div class="logo">⚡ SQL Tutor <span class="ai-badge">AI</span></div>
+  <div class="tagline">Query History</div>
+  <div class="session-info">
+    <span class="session-user">👤 <span sec:authentication="name">user</span></span>
+    <span class="session-meta">Session: <code th:text="${#strings.abbreviate(sessionId,8)}">abc</code></span>
+    <a th:href="@{/}" class="btn-nav">← Editor</a>
+    <form th:action="@{/logout}" method="post" style="display:inline;">
+      <button type="submit" class="btn-logout">Sign Out</button>
+    </form>
+  </div>
+</header>
+
+<div class="history-page">
+  <div class="history-header">
+    <div>
+      <h2>📋 Query History</h2>
+      <p class="history-sub">
+        <strong th:text="${total}">0</strong> total queries by
+        <strong sec:authentication="name">user</strong>
+        — stored in MySQL via Hibernate JPA
+      </p>
+    </div>
+    <form th:action="@{/history/clear}" method="post">
+      <button type="submit" class="btn btn-clear"
+              onclick="return confirm('Clear all history?')">🗑 Clear</button>
+    </form>
+  </div>
+
+  <div class="session-hist-box">
+    <h3>⚡ Session History <span class="tag-session">In-Memory · HttpSession</span></h3>
+    <div class="session-pills">
+      <span th:each="sql : ${sessionHistory}" class="session-pill"
+            th:text="${#strings.abbreviate(sql,50)}" th:title="${sql}"/>
+      <span th:if="${#lists.isEmpty(sessionHistory)}" class="hist-empty">None this session</span>
+    </div>
+  </div>
+
+  <h3 style="color:var(--blue);margin:18px 0 10px;font-family:var(--font-mono)">
+    🗄️ Persistent DB History <span class="tag-db">MySQL · Hibernate JPA</span>
+  </h3>
+
+  <div class="history-table-wrap" th:if="${not #lists.isEmpty(dbHistory)}">
+    <table class="history-table">
+      <thead><tr><th>#</th><th>SQL Query</th><th>Status</th><th>Rows</th><th>ms</th><th>Executed At</th></tr></thead>
+      <tbody>
+        <tr th:each="h,s : ${dbHistory}" th:classappend="${h.success}?'row-ok':'row-err'">
+          <td th:text="${s.count}"/>
+          <td class="sql-cell" th:text="${h.sqlQuery}" th:title="${h.sqlQuery}"/>
+          <td><span th:if="${h.success}" class="badge-ok">✅ OK</span>
+              <span th:unless="${h.success}" class="badge-err">❌ Err</span></td>
+          <td th:text="${h.rowsReturned}"/>
+          <td th:text="${h.executionTimeMs}"/>
+          <td th:text="${h.formattedTime}"/>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div th:if="${#lists.isEmpty(dbHistory)}" class="empty-history">
+    <p>📭 No history yet!</p>
+    <a th:href="@{/}" class="btn btn-run">Go to Editor</a>
+  </div>
+</div>
+<footer>SQL Tutor AI · Spring Boot · JavaFX · Hibernate · Session Management · Mistral-7B</footer>
+</body>
+</html>

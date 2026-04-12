@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg0:#1e1e2e;--bg1:#181825;--bg2:#11111b;--surface:#313244;--text:#cdd6f4;--subtext:#a6adc8;--muted:#6c7086;--purple:#cba6f7;--blue:#89b4fa;--green:#a6e3a1;--red:#f38ba8}
+body{min-height:100vh;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;color:var(--text);background-image:radial-gradient(ellipse at 20% 50%,rgba(203,166,247,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(137,180,250,.08) 0%,transparent 60%)}
+.login-wrapper{display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;padding:20px}
+.login-card{background:var(--bg1);border:1px solid var(--surface);border-radius:14px;padding:34px 30px;width:100%;max-width:400px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:26px}
+.logo-text{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--text)}
+.logo-text strong{color:var(--purple)}
+.ai-badge{background:linear-gradient(135deg,#cba6f7,#89b4fa);color:#11111b;padding:1px 8px;border-radius:8px;font-size:12px;font-weight:800}
+.login-subtitle{color:var(--muted);font-size:11px;margin-bottom:22px}
+.alert{padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:12px}
+.alert-error{background:#3a1e1e;border:1px solid var(--red);color:var(--red)}
+.alert-success{background:#1e3a2a;border:1px solid var(--green);color:var(--green)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:11px;font-weight:600;color:var(--subtext);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase}
+.form-group input{width:100%;padding:9px 12px;background:var(--bg0);border:1px solid var(--surface);border-radius:7px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+.form-group input:focus{border-color:var(--purple)}
+.form-group input::placeholder{color:var(--muted)}
+.btn-login{width:100%;padding:10px;background:var(--purple);color:var(--bg2);border:none;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:4px}
+.btn-login:hover{opacity:.88}.btn-login:active{transform:scale(.98)}
+.demo-hint{margin-top:20px;padding-top:16px;border-top:1px solid var(--surface)}
+.demo-hint p{font-size:10px;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em}
+.demo-users{display:flex;flex-direction:column;gap:5px}
+.demo-users span{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);cursor:pointer;padding:4px 8px;border-radius:5px;background:var(--bg0);border:1px solid var(--surface);transition:border-color .15s}
+.demo-users span:hover{border-color:var(--blue);color:var(--text)}
+.ai-note{margin-top:14px;padding:8px 12px;background:#2a1e3a;border:1px solid var(--purple);border-radius:7px;font-size:11px;color:var(--muted);text-align:center}
+.ai-note strong{color:var(--purple)}
+.login-footer{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em}

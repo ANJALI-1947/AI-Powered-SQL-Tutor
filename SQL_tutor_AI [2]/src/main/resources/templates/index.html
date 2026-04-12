@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<meta charset="UTF-8"/>
+<title>SQL Tutor AI</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<meta id="_csrf"        th:content="${_csrf.token}"/>
+<meta id="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡ SQL Tutor <span class="ai-badge">AI</span></div>
+  <div class="tagline">Spring Boot · JavaFX · Hibernate · Mistral-7B</div>
+  <div class="badge badge-connected">● Connected</div>
+  <div class="session-info">
+    <span class="session-user">👤 <span sec:authentication="name">user</span></span>
+    <span class="session-meta">Session: <code th:text="${#strings.abbreviate(sessionId,8)}">abc</code></span>
+    <span class="session-queries">Queries: <strong th:text="${queryCount}">0</strong></span>
+    <a th:href="@{/history}" class="btn-nav">📋 History</a>
+    <form th:action="@{/logout}" method="post" style="display:inline;">
+      <button type="submit" class="btn-logout">Sign Out</button>
+    </form>
+  </div>
+</header>
+
+<div class="app-layout">
+
+  <!-- ── Schema Panel ────────────────────────────────────────── -->
+  <aside class="schema-panel">
+    <h3>📂 Schema</h3>
+    <div th:each="tbl : ${schema}" class="schema-table">
+      <div class="schema-table-name" onclick="toggleCols(this)"
+           th:attr="data-table=${tbl.tableName}">
+        <span>▶</span> <span th:text="${tbl.tableName}">table</span>
+      </div>
+      <div class="schema-cols">
+        <div class="schema-col" th:each="col : ${tbl.columns}">◦ <span th:text="${col}"/></div>
+      </div>
+    </div>
+
+    <hr/>
+    <h3>⚡ Session History</h3>
+    <p class="note">In-memory · resets on logout</p>
+    <ul class="hist-list">
+      <li th:each="sql : ${sessionHistory}" class="hist-item"
+          th:text="${#strings.abbreviate(sql,42)}" th:title="${sql}"
+          th:attr="data-sql=${sql}" onclick="setQuery(this.dataset.sql)"></li>
+      <li th:if="${#lists.isEmpty(sessionHistory)}" class="hist-empty">No queries yet</li>
+    </ul>
+
+    <hr/>
+    <h3>🗄️ DB History</h3>
+    <p class="note">Saved via Hibernate</p>
+    <ul class="hist-list">
+      <li th:each="h : ${dbHistory}" class="hist-item"
+          th:classappend="${h.success}?' hist-ok':' hist-err'"
+          th:text="${#strings.abbreviate(h.sqlQuery,42)}"
+          th:title="${h.sqlQuery}"
+          th:attr="data-sql=${h.sqlQuery}" onclick="setQuery(this.dataset.sql)"></li>
+      <li th:if="${#lists.isEmpty(dbHistory)}" class="hist-empty">No history</li>
+    </ul>
+  </aside>
+
+  <!-- ── SQL Editor + Results ────────────────────────────────── -->
+  <section class="workspace">
+    <div class="editor-card">
+      <div class="card-header"><span>✏️ SQL Editor</span><kbd>Ctrl+Enter</kbd> to run</div>
+      <textarea id="sql-editor" spellcheck="false"
+                placeholder="-- Write SQL here&#10;SELECT * FROM students LIMIT 10;"></textarea>
+      <div class="editor-actions">
+        <button class="btn btn-run"   onclick="runQuery()">▶ Run</button>
+        <button class="btn btn-clear" onclick="clearAll()">✕ Clear</button>
+        <button class="btn btn-fmt"   onclick="formatSQL()">⤢ Format</button>
+        <button class="btn btn-ai"    onclick="askAIAboutQuery()">🤖 Ask AI</button>
+        <span id="status-msg"></span>
+      </div>
+    </div>
+
+    <div class="samples">
+      <span class="sample-lbl">Try:</span>
+      <button class="sample-btn" onclick="setQuery('SELECT * FROM students;')">All students</button>
+      <button class="sample-btn" onclick="setQuery('SELECT name,gpa FROM students ORDER BY gpa DESC;')">Top GPA</button>
+      <button class="sample-btn" onclick="setQuery('SELECT s.name,c.course_name,e.grade FROM students s JOIN enrollments e ON s.id=e.student_id JOIN courses c ON c.id=e.course_id;')">Joins</button>
+      <button class="sample-btn" onclick="setQuery('SELECT department,COUNT(*) total,ROUND(AVG(gpa),2) avg FROM students GROUP BY department;')">Group By</button>
+      <button class="sample-btn" onclick="setQuery('SELECT column_name, data_type FROM information_schema.columns WHERE table_name = \'students\' ORDER BY ordinal_position;')">Describe</button>
+    </div>
+
+    <div class="result-card">
+      <div class="card-header"><span>📊 Results</span><span id="row-count"></span></div>
+      <div id="result-wrap">
+        <div id="placeholder"><div style="font-size:36px">📋</div><p>Run a query to see results</p></div>
+        <div id="spinner" hidden><div class="loader"></div><p>Executing…</p></div>
+        <div id="error-box" hidden></div>
+        <div id="table-wrap" hidden>
+          <table id="result-table">
+            <thead id="result-head"></thead>
+            <tbody id="result-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AI Chatbot Panel ─────────────────────────────────────── -->
+  <aside class="chat-panel">
+    <div class="chat-header">
+      <div>
+        <div class="chat-title">🤖 AI SQL Tutor</div>
+        <div class="chat-sub">Mistral-7B Deep Learning Model</div>
+      </div>
+      <button class="btn-clear-chat" onclick="clearChat()">Clear</button>
+    </div>
+
+    <div id="chat-messages">
+      <!-- Pre-loaded chat history from DB via Thymeleaf -->
+      <div th:if="${#lists.isEmpty(chatHistory)}" class="chat-welcome">
+        <p>👋 Hi! I'm your AI SQL Tutor.</p>
+        <p>I can explain SQL, review your queries, and help you learn!</p>
+        <p>Click <strong>🤖 Ask AI</strong> after writing a query, or ask me anything below.</p>
+      </div>
+      <div th:each="msg : ${chatHistory}" class="chat-msg"
+           th:classappend="${msg.role=='user'}?' msg-user':' msg-ai'">
+        <div class="msg-role" th:text="${msg.role=='user'}?'You':'🤖 AI Tutor'">role</div>
+        <div class="msg-text" th:text="${msg.message}">text</div>
+        <div class="msg-time" th:text="${msg.formattedTime}">time</div>
+      </div>
+    </div>
+
+    <!-- Quick suggestion pills -->
+    <div class="chat-suggestions">
+      <button class="pill" onclick="quickAsk('Explain JOIN types with examples')">JOIN types</button>
+      <button class="pill" onclick="quickAsk('What is GROUP BY?')">GROUP BY</button>
+      <button class="pill" onclick="quickAsk('How to optimize slow SQL queries?')">Optimization</button>
+      <button class="pill" onclick="quickAsk('Explain subqueries with examples')">Subqueries</button>
+      <button class="pill" onclick="quickAsk('What is the difference between WHERE and HAVING?')">WHERE vs HAVING</button>
+    </div>
+
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Ask the AI tutor anything…"
+             onkeydown="if(event.key==='Enter') sendChat()"/>
+      <button class="btn btn-ai" onclick="sendChat()">Send ➤</button>
+    </div>
+
+    <div id="ai-typing" class="ai-typing" hidden>🤖 AI is thinking…</div>
+  </aside>
+
+</div>
+
+<footer>SQL Tutor AI · Spring Boot · JavaFX · Hibernate · Session Management · Mistral-7B DL Model</footer>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
