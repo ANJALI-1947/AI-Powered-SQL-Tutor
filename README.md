@@ -92,10 +92,3 @@ src/main/java
 ## Conclusion
 
 SQL Tutor and Debugger with AI Assistance combines traditional database learning with modern AI capabilities to create an intelligent and interactive SQL learning platform.
-
----
-
-## Author
-
-- Developed by: Your Name
-- GitHub: Your GitHub Link
